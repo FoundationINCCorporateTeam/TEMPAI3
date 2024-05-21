@@ -6,7 +6,6 @@ For more information on `huggingface_hub` Inference API support, please check th
 """
 client = InferenceClient("HuggingFaceH4/zephyr-7b-beta")
 
-
 def respond(
     message,
     history: list[tuple[str, str]],
@@ -44,12 +43,11 @@ For information on how to customize the ChatInterface, peruse the gradio docs: h
 """
 demo = gr.ChatInterface(
     respond,
-        additional_inputs=[
+    additional_inputs=[
         gr.Textbox(value="You are a friendly Chatbot.", label="System message"),
         gr.Slider(minimum=1, maximum=2048, value=512, step=1, label="Max new tokens"),
     ],
 )
 
-
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(server_name="0.0.0.0", server_port=7860)
