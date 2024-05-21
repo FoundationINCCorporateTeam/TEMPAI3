@@ -1,7 +1,7 @@
 import gradio as gr
 import requests
 
-API_URL = "/api/respond"
+API_URL = "http://localhost:7860/api/respond"
 
 def call_respond(message, history, system_message, max_tokens, temperature, top_p):
     response = requests.post(
