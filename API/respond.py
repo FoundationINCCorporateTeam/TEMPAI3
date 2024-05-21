@@ -1,9 +1,10 @@
-from huggingface_hub import InferenceClient
 from flask import Flask, request, jsonify
-
-client = InferenceClient("HuggingFaceH4/zephyr-7b-beta")
+import requests
 
 app = Flask(__name__)
+
+# Define your Hugging Face API token
+HF_API_TOKEN = "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"
 
 @app.route('/respond', methods=['POST'])
 def respond():
@@ -15,6 +16,7 @@ def respond():
     temperature = data.get('temperature', 0.7)
     top_p = data.get('top_p', 0.9)
 
+    # Construct the messages
     messages = [{"role": "system", "content": system_message}]
     for val in history:
         if val[0]:
@@ -23,18 +25,19 @@ def respond():
             messages.append({"role": "assistant", "content": val[1]})
     messages.append({"role": "user", "content": message})
 
-    response = ""
-    for message in client.chat_completion(
-        messages,
-        max_tokens=max_tokens,
-        stream=True,
-        temperature=temperature,
-        top_p=top_p,
-    ):
-        token = message.choices[0].delta.content
-        response += token
+    # Send the request to Hugging Face API
+    response = requests.post(
+        "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta",
+        headers={"Authorization": f"Bearer {HF_API_TOKEN}"},
+        json={"inputs": messages, "parameters": {"max_tokens": max_tokens, "temperature": temperature, "top_p": top_p}}
+    )
 
-    return jsonify({"response": response})
+    # Return the response
+    if response.status_code == 200:
+        result = response.json()
+        return jsonify({"response": result['choices'][0]['text']})
+    else:
+        return jsonify({"error": "Failed to get response from model"}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=7860)
