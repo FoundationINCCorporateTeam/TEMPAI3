@@ -14,7 +14,7 @@ def respond():
     temperature = data.get('temperature', 0.7)
     top_p = data.get('top_p', 0.9)
 
-    # Construct the input message
+    # Send only the latest message to the Hugging Face API
     input_message = [{"role": "user", "content": message}]
 
     # Send the request to Hugging Face API
