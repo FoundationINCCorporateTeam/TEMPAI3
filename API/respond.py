@@ -3,6 +3,9 @@ from flask import Flask, request, jsonify
 
 client = InferenceClient("HuggingFaceH4/zephyr-7b-beta")
 
+app = Flask(__name__)
+
+@app.route('/respond', methods=['POST'])
 def respond():
     data = request.json
     message = data.get('message')
@@ -32,3 +35,6 @@ def respond():
         response += token
 
     return jsonify({"response": response})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=7860)
