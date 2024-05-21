@@ -10,26 +10,18 @@ HF_API_TOKEN = "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"
 def respond():
     data = request.json
     message = data.get('message')
-    history = data.get('history', [])
-    system_message = data.get('system_message')
     max_tokens = data.get('max_tokens', 512)
     temperature = data.get('temperature', 0.7)
     top_p = data.get('top_p', 0.9)
 
-    # Construct the messages
-    messages = [{"role": "system", "content": system_message}]
-    for val in history:
-        if val[0]:
-            messages.append({"role": "user", "content": val[0]})
-        if val[1]:
-            messages.append({"role": "assistant", "content": val[1]})
-    messages.append({"role": "user", "content": message})
+    # Construct the input message
+    input_message = [{"role": "user", "content": message}]
 
     # Send the request to Hugging Face API
     response = requests.post(
         "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta",
         headers={"Authorization": f"Bearer {HF_API_TOKEN}"},
-        json={"inputs": messages, "parameters": {"max_tokens": max_tokens, "temperature": temperature, "top_p": top_p}}
+        json={"inputs": input_message, "parameters": {"max_tokens": max_tokens, "temperature": temperature, "top_p": top_p}}
     )
 
     # Return the response
