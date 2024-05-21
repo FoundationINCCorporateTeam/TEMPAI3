@@ -1,39 +1,32 @@
-from flask import Flask, jsonify, request
-from huggingface_hub import InferenceClient
+import gradio as gr
+import requests
 
-app = Flask(__name__)
-client = InferenceClient("HuggingFaceH4/zephyr-7b-beta")
+API_URL = "/api/respond"
 
-@app.route('/respond', methods=['POST'])
-def respond():
-    data = request.json
-    message = data.get('message')
-    history = data.get('history', [])
-    system_message = data.get('system_message')
-    max_tokens = data.get('max_tokens', 512)
-    temperature = data.get('temperature', 0.7)
-    top_p = data.get('top_p', 0.9)
+def call_respond(message, history, system_message, max_tokens, temperature, top_p):
+    response = requests.post(
+        API_URL,
+        json={
+            "message": message,
+            "history": history,
+            "system_message": system_message,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+            "top_p": top_p,
+        },
+    )
+    return response.json()["response"]
 
-    messages = [{"role": "system", "content": system_message}]
-    for val in history:
-        if val[0]:
-            messages.append({"role": "user", "content": val[0]})
-        if val[1]:
-            messages.append({"role": "assistant", "content": val[1]})
-    messages.append({"role": "user", "content": message})
+def respond(message, history, system_message, max_tokens, temperature, top_p):
+    return call_respond(message, history, system_message, max_tokens, temperature, top_p)
 
-    response = ""
-    for message in client.chat_completion(
-        messages,
-        max_tokens=max_tokens,
-        stream=True,
-        temperature=temperature,
-        top_p=top_p,
-    ):
-        token = message.choices[0].delta.content
-        response += token
+demo = gr.ChatInterface(
+    respond,
+    additional_inputs=[
+        gr.Textbox(value="You are a friendly Chatbot.", label="System message"),
+        gr.Slider(minimum=1, maximum=2048, value=512, step=1, label="Max new tokens"),
+    ],
+)
 
-    return jsonify({"response": response})
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=7860)
+if __name__ == "__main__":
+    demo.launch(server_name="0.0.0.0", server_port=7860)
