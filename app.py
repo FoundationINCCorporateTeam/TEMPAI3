@@ -1,32 +1,14 @@
 from flask import Flask, render_template, request, jsonify
-from huggingface_hub import InferenceClient
+import requests
 
 app = Flask(__name__)
-client = InferenceClient("HuggingFaceH4/zephyr-7b-beta")
 
-def get_response(message, history, system_message, max_tokens, temperature, top_p):
-    messages = [{"role": "system", "content": system_message}]
-    for val in history:
-        if val[0]:
-            messages.append({"role": "user", "content": val[0]})
-        if val[1]:
-            messages.append({"role": "assistant", "content": val[1]})
-    messages.append({"role": "user", "content": message})
+API_URL = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta"
+HEADERS = {"Authorization": "Bearer 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"}
 
-    response = ""
-    for message in client.chat_completion(
-        messages,
-        max_tokens=max_tokens,
-        stream=True,
-        temperature=temperature,
-        top_p=top_p,
-    ):
-        if message.choices and len(message.choices) > 0:
-            token = message.choices[0].delta.content
-            response += token
-
-    return response
-
+def query(payload):
+    response = requests.post(API_URL, headers=HEADERS, json=payload)
+    return response.json()
 
 @app.route('/')
 def index():
@@ -36,13 +18,10 @@ def index():
 def chat():
     data = request.json
     message = data['message']
-    history = data.get('history', [])
-    system_message = data.get('system_message', "You are a friendly Chatbot.")
-    max_tokens = data.get('max_tokens', 512)
-    temperature = data.get('temperature', 1.0)
-    top_p = data.get('top_p', 1.0)
 
-    response = get_response(message, history, system_message, max_tokens, temperature, top_p)
+    payload = {"inputs": message}
+    response = query(payload)
+    
     return jsonify({'response': response})
 
 if __name__ == "__main__":
