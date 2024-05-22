@@ -4,7 +4,7 @@ import json
 
 app = Flask(__name__)
 
-API_URL = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta"
+API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-v0.1"
 HEADERS = {"Authorization": "Bearer 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"}
 
 def query(payload):
