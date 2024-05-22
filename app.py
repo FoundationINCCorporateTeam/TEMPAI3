@@ -1,10 +1,9 @@
 from flask import Flask, render_template, request, jsonify
 import requests
-import json
 
 app = Flask(__name__)
 
-API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-v0.1"
+API_URL = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta"
 HEADERS = {"Authorization": "Bearer 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"}
 
 def query(payload):
@@ -23,10 +22,7 @@ def chat():
     payload = {"inputs": message}
     response = query(payload)
     
-    # Convert the JSON response to a string before returning
-    response_str = json.dumps(response)
-    
-    return jsonify({'response': response_str})
+    return jsonify({'response': response['choices'][0]['generated_text']})
 
 if __name__ == "__main__":
     app.run(debug=True)
