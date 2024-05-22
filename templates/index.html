@@ -3,36 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>Chatbot</title>
 </head>
 <body>
     <div id="chat-container">
-        <div id="chat-box"></div>
-        <input type="text" id="user-input" placeholder="Type your message...">
-        <button onclick="sendMessage()">Send</button>
+        {% if response %}
+        <p>{{ response }}</p>
+        {% endif %}
+        {% if error %}
+        <p>Error: {{ error }}</p>
+        {% endif %}
     </div>
+    <form id="message-form">
+        <textarea id="message-input" placeholder="Type your message here..."></textarea>
+        <button type="submit">Send</button>
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        async function sendMessage() {
-            const userInput = document.getElementById('user-input');
-            const chatBox = document.getElementById('chat-box');
-            const message = userInput.value;
-            if (!message) return;
-
-            chatBox.innerHTML += `<div class="user-message">${message}</div>`;
-            userInput.value = '';
-
-            const response = await fetch('/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ message: message })
+        $(document).ready(function() {
+            $('#message-form').submit(function(event) {
+                event.preventDefault();
+                var message = $('#message-input').val();
+                $.ajax({
+                    type: 'POST',
+                    url: '/chat',
+                    contentType: 'application/json',
+                    data: JSON.stringify({'message': message}),
+                    success: function(response) {
+                        $('#chat-container').append('<p>' + response + '</p>');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(error);
+                    }
+                });
             });
-
-            const data = await response.json();
-            chatBox.innerHTML += `<div class="bot-message">${data.response}</div>`;
-        }
+        });
     </script>
 </body>
 </html>
