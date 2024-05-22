@@ -1,20 +1,9 @@
 import gradio as gr
 from huggingface_hub import InferenceClient
 
-"""
-For more information on `huggingface_hub` Inference API support, please check the docs: https://huggingface.co/docs/huggingface_hub/v0.22.2/en/guides/inference
-"""
 client = InferenceClient("HuggingFaceH4/zephyr-7b-beta")
 
-
-def respond(
-    message,
-    history: list[tuple[str, str]],
-    system_message,
-    max_tokens,
-    temperature,
-    top_p,
-):
+def respond(message, history: list[tuple[str, str]], system_message, max_tokens, temperature, top_p):
     messages = [{"role": "system", "content": system_message}]
 
     for val in history:
@@ -39,17 +28,13 @@ def respond(
         response += token
         yield response
 
-"""
-For information on how to customize the ChatInterface, peruse the gradio docs: https://www.gradio.app/docs/chatinterface
-"""
 demo = gr.ChatInterface(
     respond,
-        additional_inputs=[
+    additional_inputs=[
         gr.Textbox(value="You are a friendly Chatbot.", label="System message"),
         gr.Slider(minimum=1, maximum=2048, value=512, step=1, label="Max new tokens"),
     ],
 )
-
 
 if __name__ == "__main__":
     demo.launch()
