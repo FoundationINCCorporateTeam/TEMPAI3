@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import requests
+import json
 
 app = Flask(__name__)
 
@@ -22,7 +23,10 @@ def chat():
     payload = {"inputs": message}
     response = query(payload)
     
-    return jsonify({'response': response})
+    # Convert the JSON response to a string before returning
+    response_str = json.dumps(response)
+    
+    return jsonify({'response': response_str})
 
 if __name__ == "__main__":
     app.run(debug=True)
