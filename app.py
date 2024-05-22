@@ -21,10 +21,12 @@ def get_response(message, history, system_message, max_tokens, temperature, top_
         temperature=temperature,
         top_p=top_p,
     ):
-        token = message.choices[0].delta.content
-        response += token
+        if message.choices and len(message.choices) > 0:
+            token = message.choices[0].delta.content
+            response += token
 
     return response
+
 
 @app.route('/')
 def index():
