@@ -1,2 +1,2 @@
-Flask
+gradio
 huggingface_hub
