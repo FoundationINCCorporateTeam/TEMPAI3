@@ -1,30 +1,55 @@
-from flask import Flask, render_template, request
-import requests
-import json
+import gradio as gr
+from huggingface_hub import InferenceClient
 
-app = Flask(__name__)
+"""
+For more information on `huggingface_hub` Inference API support, please check the docs: https://huggingface.co/docs/huggingface_hub/v0.22.2/en/guides/inference
+"""
+client = InferenceClient("HuggingFaceH4/zephyr-7b-beta")
 
-API_URL = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta"
-HEADERS = {"Authorization": "Bearer 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"}
 
-def query(payload):
-    response = requests.post(API_URL, headers=HEADERS, json=payload)
-    return response.json()
+def respond(
+    message,
+    history: list[tuple[str, str]],
+    system_message,
+    max_tokens,
+    temperature,
+    top_p,
+):
+    messages = [{"role": "system", "content": system_message}]
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+    for val in history:
+        if val[0]:
+            messages.append({"role": "user", "content": val[0]})
+        if val[1]:
+            messages.append({"role": "assistant", "content": val[1]})
 
-@app.route('/chat', methods=['POST'])
-def chat():
-    try:
-        data = request.json
-        message = data['message']
-        payload = {"inputs": message}
-        response = query(payload)
-        return render_template('index.html', response=json.dumps(response['choices'][0]['generated_text']))
-    except Exception as e:
-        return render_template('index.html', error=str(e))
+    messages.append({"role": "user", "content": message})
+
+    response = ""
+
+    for message in client.chat_completion(
+        messages,
+        max_tokens=max_tokens,
+        stream=True,
+        temperature=temperature,
+        top_p=top_p,
+    ):
+        token = message.choices[0].delta.content
+
+        response += token
+        yield response
+
+"""
+For information on how to customize the ChatInterface, peruse the gradio docs: https://www.gradio.app/docs/chatinterface
+"""
+demo = gr.ChatInterface(
+    respond,
+        additional_inputs=[
+        gr.Textbox(value="You are a friendly Chatbot.", label="System message"),
+        gr.Slider(minimum=1, maximum=2048, value=512, step=1, label="Max new tokens"),
+    ],
+)
+
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    demo.launch()
