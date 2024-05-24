@@ -27,29 +27,32 @@ def respond(
 
     response = ""
 
-    for message in client.chat_completion(
-        messages,
-        max_tokens=max_tokens,
-        stream=True,
-        temperature=temperature,
-        top_p=top_p,
-    ):
-        token = message.choices[0].delta.content
-
-        response += token
-        yield response
+    try:
+        for message in client.chat_completion(
+            messages,
+            max_tokens=max_tokens,
+            stream=True,
+            temperature=temperature,
+            top_p=top_p,
+        ):
+            token = message.choices[0].delta.get("content", "")
+            response += token
+            yield response
+    except Exception as e:
+        yield f"Error: {str(e)}"
 
 """
 For information on how to customize the ChatInterface, peruse the gradio docs: https://www.gradio.app/docs/chatinterface
 """
 demo = gr.ChatInterface(
     respond,
-        additional_inputs=[
-        gr.Textbox(value="You are a friendly Chatbot.", label="System message"),
-        gr.Slider(minimum=1, maximum=2048, value=512, step=1, label="Max new tokens"),
+    additional_inputs=[
+        gr.Textbox(value="You are a friendly Chatbot.", label="System message", interactive=True),
+        gr.Slider(minimum=1, maximum=2048, value=512, step=1, label="Max new tokens", interactive=True),
+        gr.Slider(minimum=0.0, maximum=1.0, value=1.0, step=0.01, label="Temperature", interactive=True),
+        gr.Slider(minimum=0.0, maximum=1.0, value=0.9, step=0.01, label="Top P", interactive=True)
     ],
 )
 
-
 if __name__ == "__main__":
-        demo.launch(server_name="0.0.0.0", server_port=7860)
+    demo.launch(server_name="0.0.0.0", server_port=7860)
