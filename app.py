@@ -52,6 +52,7 @@ demo = gr.ChatInterface(
         gr.Textbox(value="You are a friendly Chatbot.", label="System message", interactive=True),
         gr.Slider(minimum=1, maximum=2048, value=512, step=1, label="Max new tokens", interactive=True)
     ],
+    description="By using this AI, you agree to the <a href='https://school.picinel.ro/mnairedirect' target='_blank'>Terms of Service and Acceptable Use Policy</a>."
 )
 
 if __name__ == "__main__":
