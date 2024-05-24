@@ -4,7 +4,9 @@ from huggingface_hub import InferenceClient
 """
 For more information on `huggingface_hub` Inference API support, please check the docs: https://huggingface.co/docs/huggingface_hub/v0.22.2/en/guides/inference
 """
-client = InferenceClient("HuggingFaceH4/zephyr-7b-beta")
+# Replace 'your_huggingface_access_token' with your actual Hugging Face access token
+access_token = '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'
+client = InferenceClient("HuggingFaceH4/zephyr-7b-beta", token=access_token)
 
 
 def respond(
