@@ -50,9 +50,7 @@ demo = gr.ChatInterface(
     respond,
     additional_inputs=[
         gr.Textbox(value="You are a friendly Chatbot.", label="System message", interactive=True),
-        gr.Slider(minimum=1, maximum=2048, value=512, step=1, label="Max new tokens", interactive=True),
-        gr.Slider(minimum=0.0, maximum=1.0, value=1.0, step=0.01, label="Temperature", interactive=True),
-        gr.Slider(minimum=0.0, maximum=1.0, value=0.9, step=0.01, label="Top P", interactive=True)
+        gr.Slider(minimum=1, maximum=2048, value=512, step=1, label="Max new tokens", interactive=True)
     ],
 )
 
