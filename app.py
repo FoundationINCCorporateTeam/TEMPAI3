@@ -1,13 +1,25 @@
 import gradio as gr
 from huggingface_hub import InferenceClient
+from supabase import create_client, Client
 
-"""
-For more information on `huggingface_hub` Inference API support, please check the docs: https://huggingface.co/docs/huggingface_hub/v0.22.2/en/guides/inference
-"""
-# Replace 'your_huggingface_access_token' with your actual Hugging Face access token
+# Supabase credentials
+supabase_url = "https://kjrcvkmzztpjpbyfoayr.supabase.co"
+supabase_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqcmN2a216enRwanBieWZvYXlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY3NDQwNzIsImV4cCI6MjAzMjMyMDA3Mn0.epcMnUqZONlMeCd_eUgh9opgSlZbNeVKnzARF-pHYg0"
+supabase: Client = create_client(supabase_url, supabase_key)
+
+# Hugging Face credentials
 access_token = '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'
 client = InferenceClient("HuggingFaceH4/zephyr-7b-beta", token=access_token)
 
+def log_to_supabase(input_text, output_text):
+    try:
+        response = supabase.table('mnairecords').insert({'input': input_text, 'output': output_text}).execute()
+        if response.status_code == 201:
+            print("Record inserted successfully.")
+        else:
+            print("Failed to insert record:", response.data)
+    except Exception as e:
+        print("Error logging to Supabase:", e)
 
 def respond(
     message,
@@ -42,6 +54,8 @@ def respond(
             yield response
     except Exception as e:
         yield f"Error: {str(e)}"
+    finally:
+        log_to_supabase(message, response)
 
 """
 For information on how to customize the ChatInterface, peruse the gradio docs: https://www.gradio.app/docs/chatinterface
